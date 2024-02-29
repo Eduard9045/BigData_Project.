@@ -1,0 +1,1 @@
+SELECT * FROM bdm_project.anagrafe_biblioteche;

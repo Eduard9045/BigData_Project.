@@ -1,0 +1,88 @@
+// PostgreSQL code
+
+
+
+Create EXTENSION postgis;
+
+//Table creation/population
+Create Table Anagrafe_biblioteche(
+	codice_identificativo varchar primary key, codice_istat varchar,
+	denominazione varchar,comune varchar, provincia varchar,
+	cap varchar, indirizzo varchar, superficie integer,
+	tot_consistenza_documenti integer, spese_tot varchar,
+	WGS84_Y varchar, WGS84_X varchar
+);
+
+copy Anagrafe_biblioteche(
+	codice_identificativo,codice_istat, denominazione, comune, provincia, cap, indirizzo,
+	superficie, tot_consistenza_documenti, spese_tot, WGS84_Y, WGS84_X
+	)
+from 'C:\Users\endur\Desktop\big_data_es\Anagrafe_biblioteche.csv'
+delimiter ';'
+header CSV;
+
+//Data cleaning first table
+ALTER TABLE Anagrafe_biblioteche
+ALTER COLUMN codice_identificativo TYPE integer
+USING codice_identificativo::integer;
+
+Delete from Anagrafe_biblioteche
+where tot_consistenza_documenti Is Null or spese_tot IS Null or wgs84_y Is Null or wgs84_x IS Null;
+
+Update Anagrafe_biblioteche set spese_tot = replace(spese_tot, ',','.');
+
+Alter table Anagrafe_biblioteche add geo geography(point,4326);
+UPDATE Anagrafe_biblioteche
+SET geo = ST_GeomFromText('POINT(' || wgs84_x || ' ' || wgs84_y || ')', 4326);
+
+
+//Query 1
+
+Select denominazione,comune,provincia,indirizzo, superficie 
+from Anagrafe_biblioteche 
+Order by superficie DESC
+LIMIT 10;
+
+//Query 2
+
+SELECT provincia, COUNT(*) AS totale_biblioteche
+FROM anagrafe_biblioteche
+GROUP_BY provincia;
+
+//Query 3
+
+SELECT
+  COUNT(codice_identificativo) AS conteggio_biblioteche,
+  ROUND(COUNT(codice_identificativo) / 12.0, 2) AS n_medio_bib_prov,
+  12 AS numero_province
+FROM Anagrafe_biblioteche;
+
+//Creating second table
+alter table com01012023_wgs84
+rename to confini_amministrativi_lombardia;
+
+//Cleaning new table
+alter table confini_amministrativi_lombardia
+drop column cod_rip;
+alter table confini_amministrativi_lombardia
+drop column cod_cm;
+alter table confini_amministrativi_lombardia
+drop column cod_uts;
+alter table confini_amministrativi_lombardia
+drop column pro_com_t;
+alter table confini_amministrativi_lombardia
+drop column comune_a;
+alter table confini_amministrativi_lombardia
+drop column cc_uts;
+delete from confini_amministrativi_lombardia
+where cod_reg <> 3;
+
+// New table bergamo
+
+create table confini_amministrativi_bergamo as
+select*from confini_amministrativi_lombardia where cod_prov = 16;
+
+//Query 4
+
+select denominazione, indirizzo, superficie,geo from biblioteche_bergamo
+where comune = 'BERGAMO' order by superficie DESC;

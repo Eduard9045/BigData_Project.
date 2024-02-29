@@ -1,0 +1,39 @@
+//MySQL code
+
+
+//Table creation
+CREATE TABLE `bdm_project`.`new_table` (
+  `codice_identificativo` INT NOT NULL,
+  `codice_istat` VARCHAR(45) NULL,
+  `denominazione` VARCHAR(300) NULL,
+  `comune` VARCHAR(45) NULL,
+  `provincia` VARCHAR(45) NULL,
+  `cap` VARCHAR(45) NULL,
+  `indirizzo` VARCHAR(300) NULL,
+  `superficie` INT NULL,
+  `tot_consistenza_documenti` INT NULL,
+  `spese_tot` FLOAT NULL,
+  PRIMARY KEY (`codice_identificativo`));
+
+// Loading data, populating the table  
+LOAD DATA INFILE 'C:\anagrafe_bib_mysql.csv'
+INTO TABLE anagrafe_biblioteche
+FIELDS TERMINATED BY ',';
+
+//Viewing the table
+SELECT * FROM bdm_project.anagrafe_biblioteche;
+
+
+//Query 1
+Select count(*)
+from anagrafe_biblioteche
+where superficie > 100;
+
+
+//Query 2
+Select t1.denominazione, t1.superficie
+from anagrafe_biblioteche AS t1
+where t1.superficie = (
+  select MAX(superficie)
+  from anagrafe_biblioteche
+);
