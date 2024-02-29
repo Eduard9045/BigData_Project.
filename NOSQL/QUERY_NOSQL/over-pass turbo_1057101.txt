@@ -1,0 +1,35 @@
+//Over-pass turbo code
+
+//query1
+
+[out:json];
+area["name"="Lombardia"]->.searchArea;
+(
+  node["amenity"="university"](area.searchArea);
+  way["amenity"="university"](area.searchArea);
+  rel["amenity"="university"](area.searchArea);
+);
+out center;
+{{style:
+node{
+  color:blue;
+  fill-color:blue;
+}
+}}
+
+
+//query 2
+[out:json];
+area["name"="Bergamo"]->.searchArea;
+(
+  node["amenity"="fast_food"](area.searchArea);
+  way["amenity"="fast_food"](area.searchArea);
+  rel["amenity"="fast_food"](area.searchArea);
+);
+out center;
+{{style:
+node{
+  color:green;
+  fill-color:brown;
+}
+}}

@@ -1,0 +1,39 @@
+
+// NOSQL code
+
+
+//Loding data
+
+LOAD CSV WITH HEADERS FROM 'file:///airports.csv' AS row
+CREATE (a:Airport {airport_id: row.airport_id, city: row.city, state: row.state, name_airport: row.name_airport})
+return a
+
+LOAD CSV WITH HEADERS FROM 'file:///flights.csv' AS flights FIELDTERMINATOR ';'
+CREATE (f:Flight {OriginAirportID: flights.OriginAirportID, DestAirportID: flights.DestAirportID, DepDelay: flights.DepDelay, ArrDelay: flights.ArrDelay})
+return f
+
+//Creating relationship
+MATCH(a:Airport),(f:Flight)
+WHERE a.airport_id = f.OriginAirportID
+CREATE (f)-[:ORIGINATES_FROM]-(a)
+RETURN a,f
+
+
+//Query 1
+MATCH (origin:Airport)-[flight:HAS_FLIGHT]->()
+RETURN origin.name_airport AS Airport, COUNT(flight) AS DepartureFlights
+ORDER BY DepartureFlights DESC
+
+
+//Query 2
+MATCH (airport:Airport)
+WHERE airport.city = 'New York'
+RETURN airport
+
+//Query3
+MATCH (flight:Flight)
+WITH COUNT(*) AS TotalFlights
+MATCH (flight:Flight)
+WHERE flight.DepDelay > 30
+WITH COUNT(*) AS DelayedFlights, TotalFlights
+RETURN DelayedFlights, TotalFlights, toFloat(DelayedFlights) / toFloat(TotalFlights)*100 AS DelayedToTotalRatioPercentage
